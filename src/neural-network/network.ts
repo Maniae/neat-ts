@@ -1,10 +1,10 @@
 import { Layer } from "./layer";
 
-interface NetworkOption {
+interface NetworkOptions {
 	layers: Layer[];
 }
 export class Network {
-	private layers: Layer[];
+	layers: Layer[];
 
 	static perceptron(layersSizes: number[]) {
 		return new Network({
@@ -19,7 +19,7 @@ export class Network {
 		});
 	}
 
-	constructor(options: NetworkOption) {
+	constructor(options: NetworkOptions) {
 		this.layers = options.layers || [];
 	}
 

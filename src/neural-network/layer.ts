@@ -1,16 +1,16 @@
 import { Neuron, NeuronOptions } from "./neuron";
 
-interface LayerOption {
+interface LayerOptions {
 	neurons?: Neuron[];
 	size?: number;
 	inputsSize?: number;
 	isInputLayer?: boolean;
 }
 export class Layer {
-	private neurons: Neuron[];
-	private isInputLayer: boolean;
+	neurons: Neuron[];
+	isInputLayer: boolean;
 
-	constructor(options: LayerOption = {}) {
+	constructor(options: LayerOptions = {}) {
 		this.neurons = options.neurons || [];
 		this.isInputLayer = options.isInputLayer || false;
 		if (options.size) {

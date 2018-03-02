@@ -1,17 +1,30 @@
 import { Gene } from "./gene";
 
+interface CandidateOptions<T> {
+	fitness: (genes: T[]) => number;
+	mutate: (genes: T[]) => T[];
+	crossProbability?: number;
+	mutationProbability?: number;
+}
+
 export class Candidate<T extends Gene> {
-	constructor(
-		readonly genes: T[],
-		readonly crossProbability: number,
-		readonly fitness: (genes?: T[]) => number,
-		readonly mutationProbability: number,
-		readonly mutate: (genes: T[]) => T[]
-	) {}
+	genes: T[];
+	fitness: (genes: T[]) => number;
+	mutate: (genes: T[]) => T[];
+	crossProbability: number;
+	mutationProbability: number;
+
+	constructor(genes: T[], options: CandidateOptions<T>) {
+		this.genes = genes;
+		this.fitness = options.fitness;
+		this.mutate = options.mutate;
+		this.crossProbability = options.crossProbability || 0.8;
+		this.mutationProbability = options.mutationProbability || 0.1;
+	}
 
 	cross = (other: Candidate<T>) => {
-		const firstChildGenes: T[] = [];
-		const secondChildGenes: T[] = [];
+		let firstChildGenes: T[] = [];
+		let secondChildGenes: T[] = [];
 		/**
 		 * Cross the two parents genes according to the cross probability
 		 */
@@ -23,15 +36,25 @@ export class Candidate<T extends Gene> {
 		/**
 		 * Each child may mutate according to the mutation probability
 		 */
-		for (const childGenes of [firstChildGenes, secondChildGenes]) {
-			if (Math.random() < this.mutationProbability) {
-				this.mutate(childGenes);
-			}
+		if (Math.random() < this.mutationProbability) {
+			firstChildGenes = this.mutate(firstChildGenes);
+		}
+		if (Math.random() < this.mutationProbability) {
+			secondChildGenes = this.mutate(secondChildGenes);
 		}
 
 		return [
-			new Candidate(firstChildGenes, this.crossProbability, this.fitness, this.mutationProbability, this.mutate),
-			new Candidate(secondChildGenes, this.crossProbability, this.fitness, this.mutationProbability, this.mutate)
+			new Candidate(firstChildGenes, this.getOptions()),
+			new Candidate(secondChildGenes, this.getOptions())
 		];
+	}
+
+	getOptions = (): CandidateOptions<T> => {
+		return {
+			fitness: this.fitness,
+			mutate: this.mutate,
+			crossProbability: this.crossProbability,
+			mutationProbability: this.mutationProbability
+		};
 	}
 }

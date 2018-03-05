@@ -1,3 +1,5 @@
+import { Activation } from "./methods";
+
 export interface NeuronOptions {
 	weights?: number[];
 	activationFunction?: (x: number) => number;
@@ -5,18 +7,18 @@ export interface NeuronOptions {
 }
 
 export class Neuron {
-	private weights: number[];
+	weights: number[];
 	private activationFunction: (x: number) => number;
 
 	constructor(options: NeuronOptions = {}) {
 		this.weights = options.weights || [];
-		this.activationFunction = options.activationFunction || (x => x);
+		this.activationFunction = options.activationFunction || Activation.SIGMOID;
 		if (options.inputsSize) {
 			if (options.weights) {
 				throw Error("Neuron constructor should be called with either a weight array OR with an input size");
 			}
 			for (let i = 0; i < options.inputsSize; i++) {
-				this.setWeight(i, Math.random());
+				this.setWeight(i, Math.random() * 2 - 1);
 			}
 		}
 	}

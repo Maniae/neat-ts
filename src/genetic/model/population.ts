@@ -4,8 +4,8 @@ import { Gene } from "./gene";
 
 interface PopulationOptions<T> {
 	select?: (candidates: Candidate<T>[]) => Candidate<T>[];
-	fitness: (genes: T[]) => number;
-	mutate: (genes: T[]) => T[];
+	fitness?: (genes: T[]) => number;
+	mutate?: (genes: T[]) => T[];
 	mutationProbability?: number;
 	crossProbability?: number;
 }
@@ -28,16 +28,21 @@ export class Population<T extends Gene> {
 		const candidates = [];
 		const { fitness, mutate, mutationProbability, crossProbability } = options;
 		for (let i = 0; i < size; i++) {
-			candidates.push(new Candidate(geneGenerator(), options));
+			candidates.push(new Candidate(geneGenerator(), {
+				fitness: fitness || (() => 0),
+				mutate: mutate || (g => g),
+				mutationProbability,
+				crossProbability
+			}));
 		}
 		return new Population(candidates, options);
 	}
 
-	constructor(candidates: Candidate<T>[], options: PopulationOptions<T>) {
+	constructor(candidates: Candidate<T>[], options: PopulationOptions<T> = {}) {
 		this.candidates = candidates;
 		this.select = options.select || Selection.RANK();
-		this.fitness = options.fitness || Selection.RANK();
-		this.mutate = options.mutate || Selection.RANK();
+		this.fitness = options.fitness || (() => 0);
+		this.mutate = options.mutate || (g => g);
 	}
 
 	createNextGeneration = (): Population<T> => {

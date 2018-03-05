@@ -1,3 +1,4 @@
+import { Activation } from "./methods";
 import { Neuron, NeuronOptions } from "./neuron";
 
 interface LayerOptions {
@@ -18,7 +19,7 @@ export class Layer {
 				throw Error("Layer constructor should be called either with a Neuron array OR with a layer size");
 			}
 			for (let i = 0; i < options.size; i++) {
-				const neuronOptions: NeuronOptions = options.isInputLayer ? {weights: [1], activationFunction: (x => x)} : {};
+				const neuronOptions: NeuronOptions = options.isInputLayer ? {weights: [1], activationFunction: Activation.LINEAR} : {};
 				if (options.inputsSize) {
 					if (options.isInputLayer) {
 						throw Error("Can't specify neurons inputs size for an input layer");

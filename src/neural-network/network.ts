@@ -23,6 +23,13 @@ export class Network {
 		this.layers = options.layers || [];
 	}
 
+	get weights(): number[] {
+		return this.layers.reduce(
+			(layAcc: number[], layer) => layAcc.concat(
+				layer.neurons.reduce((neuronAcc: number[], neuron) => neuronAcc.concat(neuron.weights), [])),
+				[]);
+	}
+
 	activate = (inputs: number[]): number[] => {
 		if (inputs.length !== this.layers[0].size) {
 			throw Error("Network inputs lenght should match first layer size");

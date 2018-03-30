@@ -17,19 +17,19 @@ export class Neuron {
 			if (options.weights) {
 				throw Error("Neuron constructor should be called with either a weight array OR with an input size");
 			}
-			for (let i = 0; i < options.inputsSize; i++) {
+			for (let i = 0; i < options.inputsSize + 1; i++) {
 				this.setWeight(i, Math.random() * 2 - 1);
 			}
 		}
 	}
 
 	activate = (inputs: number[]): number => {
-		if (inputs.length !== this.weights.length) {
-			throw Error(`expecting an input array of length ${this.weights.length} but array length is ${inputs.length}`);
+		if (inputs.length + 1 !== this.weights.length) {
+			throw Error(`expecting an input array of length ${this.weights.length} but array length is ${inputs.length + 1}`);
 		}
 		const untransferedOutput = inputs.reduce((acc, input, i) => {
 			return acc + input * this.weights[i];
-		});
+		}, this.weights[this.weights.length - 1]);
 		return this.activationFunction(untransferedOutput);
 	}
 

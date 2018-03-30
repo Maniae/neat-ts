@@ -3,7 +3,7 @@ import { Population } from "../model/population";
 
 export class Selection {
 	static RANK = (selectedCandidatesNumber?: number) => <T>(candidates: Candidate<T>[]): Candidate<T>[] => {
-		const selectedCandidatesSize = selectedCandidatesNumber || Math.floor(candidates.length * 0.8);
+		const selectedCandidatesSize = selectedCandidatesNumber || Math.floor(candidates.length * 1);
 		/**
 		 * Sort candidates in ascending fitness order
 		 */

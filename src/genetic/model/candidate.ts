@@ -19,7 +19,7 @@ export class Candidate<T extends Gene> {
 		this.fitness = options.fitness;
 		this.mutate = options.mutate;
 		this.crossProbability = options.crossProbability || 0.8;
-		this.mutationProbability = options.mutationProbability || 0.1;
+		this.mutationProbability = options.mutationProbability || 0.2;
 	}
 
 	cross = (other: Candidate<T>) => {

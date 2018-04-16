@@ -8,6 +8,7 @@ interface PopulationOptions<T> {
 	mutate?: (genes: T[]) => T[];
 	mutationProbability?: number;
 	crossProbability?: number;
+	ellitism?: boolean;
 }
 
 export class Population<T extends Gene> {
@@ -17,6 +18,7 @@ export class Population<T extends Gene> {
 	mutate: (genes: T[]) => T[];
 	mutationProbability?: number;
 	crossProbability?: number;
+	ellitism: boolean;
 
 	/**
 	 * Generate a new randomized population
@@ -43,6 +45,7 @@ export class Population<T extends Gene> {
 		this.select = options.select || Selection.RANK();
 		this.fitness = options.fitness || (() => 0);
 		this.mutate = options.mutate || (g => g);
+		this.ellitism = options.ellitism || false;
 	}
 
 	createNextGeneration = (): Population<T> => {
@@ -55,7 +58,6 @@ export class Population<T extends Gene> {
 		 * Cross stronger candidates and mutates their children
 		 */
 		const newCandidates = this.cross(selectedCandidates);
-
 		/**
 		 * Add the children to the population
 		 */
@@ -66,7 +68,14 @@ export class Population<T extends Gene> {
 		 */
 		const cleanedNewGeneration = newGeneration
 			.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))
-			.slice(0, this.candidates.length);
+			.slice(0, this.candidates.length - +this.ellitism);
+
+		if (this.ellitism) {
+			// Keep the best oldest candidate
+			cleanedNewGeneration.push(
+				this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[this.candidates.length - 1]
+			);
+		}
 
 		return new Population(cleanedNewGeneration, this.getOptions());
 	}

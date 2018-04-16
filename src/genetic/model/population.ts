@@ -1,4 +1,5 @@
 import { Selection } from "../methods";
+import { Crossover } from "../methods/crossover";
 import { Candidate } from "./candidate";
 import { Gene } from "./gene";
 
@@ -6,8 +7,8 @@ interface PopulationOptions<T> {
 	select?: (candidates: Candidate<T>[]) => Candidate<T>[];
 	fitness?: (genes: T[]) => number;
 	mutate?: (genes: T[]) => T[];
+	cross?: (motherGenes: T[], fatherGenes: T[]) => T[][];
 	mutationProbability?: number;
-	crossProbability?: number;
 	ellitism?: boolean;
 }
 
@@ -16,8 +17,8 @@ export class Population<T extends Gene> {
 	select: (candidates: Candidate<T>[]) => Candidate<T>[];
 	fitness: (genes: T[]) => number;
 	mutate: (genes: T[]) => T[];
-	mutationProbability?: number;
-	crossProbability?: number;
+	cross: (motherGenes: T[], fatherGenes: T[]) => T[][];
+	mutationProbability: number;
 	ellitism: boolean;
 
 	/**
@@ -28,13 +29,10 @@ export class Population<T extends Gene> {
 	 */
 	static generatePopulation<T>(size: number, geneGenerator: () => T[], options: PopulationOptions<T>) {
 		const candidates = [];
-		const { fitness, mutate, mutationProbability, crossProbability } = options;
+		const { fitness, mutate, mutationProbability } = options;
 		for (let i = 0; i < size; i++) {
 			candidates.push(new Candidate(geneGenerator(), {
-				fitness: fitness || (() => 0),
-				mutate: mutate || (g => g),
-				mutationProbability,
-				crossProbability
+				fitness: fitness || (() => 0)
 			}));
 		}
 		return new Population(candidates, options);
@@ -46,6 +44,8 @@ export class Population<T extends Gene> {
 		this.fitness = options.fitness || (() => 0);
 		this.mutate = options.mutate || (g => g);
 		this.ellitism = options.ellitism || false;
+		this.cross = options.cross || Crossover.SINGLE_POINT();
+		this.mutationProbability = options.mutationProbability || 0.2;
 	}
 
 	createNextGeneration = (): Population<T> => {
@@ -57,7 +57,7 @@ export class Population<T extends Gene> {
 		/**
 		 * Cross stronger candidates and mutates their children
 		 */
-		const newCandidates = this.cross(selectedCandidates);
+		const newCandidates = this.crossCandidates(selectedCandidates);
 		/**
 		 * Add the children to the population
 		 */
@@ -80,14 +80,22 @@ export class Population<T extends Gene> {
 		return new Population(cleanedNewGeneration, this.getOptions());
 	}
 
-	cross = (candidates: Candidate<T>[]): Candidate<T>[] => {
+	crossCandidates = (candidates: Candidate<T>[]): Candidate<T>[] => {
 		if (candidates.length % 2 !== 0) {
 			throw Error("Selection size should be a multiple of 2");
 		}
-		let children: Candidate<T>[] = [];
+		const children: Candidate<T>[] = [];
+		const options = candidates[0].getOptions();
 		for (let i = 0; i < candidates.length; i += 2) {
-			const tChildren = candidates[i].cross(candidates[i + 1]);
-			children = children.concat(tChildren);
+			let [firstChildGenes, secondChildGenes] = this.cross(candidates[i].genes, candidates[i + 1].genes);
+			if (Math.random() < this.mutationProbability) {
+				firstChildGenes = this.mutate(firstChildGenes);
+			}
+			if (Math.random() < this.mutationProbability) {
+				secondChildGenes = this.mutate(secondChildGenes);
+			}
+			children.push(new Candidate(firstChildGenes, options));
+			children.push(new Candidate(secondChildGenes, options));
 		}
 		return children;
 	}
@@ -97,8 +105,7 @@ export class Population<T extends Gene> {
 			fitness: this.fitness,
 			mutate: this.mutate,
 			select: this.select,
-			mutationProbability: this.mutationProbability,
-			crossProbability: this.crossProbability
+			mutationProbability: this.mutationProbability
 		};
 	}
 }

@@ -6,6 +6,9 @@ export interface Position {
 	y: number;
 }
 
+const c = document.getElementById("canvas") as HTMLCanvasElement;
+const ctx = c.getContext("2d")!;
+
 export function salesman(towns: Position[]) {
 
 	const fitness = (genes: number[]) => {
@@ -15,7 +18,7 @@ export function salesman(towns: Position[]) {
 			}
 			return acc + distance(towns[gene], towns[genes[index - 1]]);
 		});
-		return 1 / totalDistance;
+		return 1000 / totalDistance;
 	};
 
 	const mutate = (genes: number[]) => {
@@ -27,25 +30,44 @@ export function salesman(towns: Position[]) {
 	};
 
 	const cross = (motherGenes: number[], fatherGenes: number[]) => {
-		const startPos = 0;
-	}
+		const genesLength = motherGenes.length;
+		const endPos = Math.floor(genesLength * 0.8);
+		const firstChildGenes = motherGenes.slice(0, endPos);
+		const secondChildGenes = fatherGenes.slice(0, endPos);
+		for (let i = 0; i < genesLength; i++) {
+			if (firstChildGenes.indexOf(fatherGenes[i]) < 0) {
+				firstChildGenes.push(fatherGenes[i]);
+			}
+			if (secondChildGenes.indexOf(motherGenes[i]) < 0) {
+				secondChildGenes.push(motherGenes[i]);
+			}
+		}
+		if (firstChildGenes.length !== genesLength || secondChildGenes.length !== genesLength) {
+			throw Error("children length not matching parent's");
+		}
+		return [firstChildGenes, secondChildGenes];
+	};
 
 	let pop = Population.generatePopulation(
-		20,
+		200,
 		createRandomGenotype,
 		{
 			fitness,
 			mutate,
 			cross,
-			mutationProbability: 0.4
+			mutationProbability: 1
 		}
 	);
 
-	for (let i = 0; i < 40; i++) {
-		document.getElementById("main")!.innerHTML
-			+= ("<br/><br />" + pop.candidates[0].genes + ", fitness: " + pop.candidates[0].fitness(pop.candidates[0].genes));
+	const step = () => {
+		drawSolution(towns, pop.candidates[0].genes);
+		// pop.candidates.map(it => drawSolution(towns, it.genes));
+		document.getElementById("score")!.innerHTML = "" + pop.candidates[0].fitness(pop.candidates[0].genes);
 		pop = pop.createNextGeneration();
-	}
+		requestAnimationFrame(step);
+	};
+
+	requestAnimationFrame(step);
 
 	function createRandomGenotype() {
 		const genotype = Array.from({length: towns.length}, (v, k) => k);
@@ -67,4 +89,27 @@ function shuffleArray(array: any[]) {
 		const j = Math.floor(Math.random() * (i + 1));
 		[array[i], array[j]] = [array[j], array[i]];
 	}
+}
+
+function drawSolution(towns: Position[], genes: number[]) {
+	const genesCopy = genes.slice(0);
+	genesCopy.push(genes[0]);
+	ctx.clearRect(0, 0, c.width, c.height);
+	for (const town of towns) {
+		ctx.beginPath();
+		ctx.fillStyle = "blue";
+		ctx.arc(c.width / 10 * town.x, c.height - (c.height / 10 * town.y), 5, 0, 2 * Math.PI);
+		ctx.fill();
+	}
+	// ctx.strokeStyle = `rgb(
+	// 	${Math.floor(Math.random() * 255)},
+	// 	${Math.floor(Math.random() * 255)},
+	// 	${Math.floor(Math.random() * 255)}
+	// )`;
+	ctx.moveTo(towns[genesCopy[0]].x, towns[genesCopy[0]].y);
+	ctx.beginPath();
+	for (const g of genesCopy) {
+		ctx.lineTo(c.width / 10 * towns[g].x, c.height - (c.height / 10 * towns[g].y));
+	}
+	ctx.stroke();
 }

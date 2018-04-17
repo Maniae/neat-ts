@@ -105,7 +105,9 @@ export class Population<T extends Gene> {
 			fitness: this.fitness,
 			mutate: this.mutate,
 			select: this.select,
-			mutationProbability: this.mutationProbability
+			cross: this.cross,
+			mutationProbability: this.mutationProbability,
+			ellitism: this.ellitism
 		};
 	}
 }

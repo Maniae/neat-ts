@@ -1,5 +1,5 @@
-import { findPassword } from "./demos/findPassword";
-import { salesman } from "./demos/salesman";
+import { findPassword } from "./demos/genetic/findPassword";
+import { salesman } from "./demos/genetic/salesman";
 
 // findPassword("passwordhardcoretropduratrouver");
 salesman([

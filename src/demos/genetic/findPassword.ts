@@ -1,5 +1,5 @@
-import { Selection } from "../genetic/methods";
-import { Candidate, Population } from "../genetic/model";
+import { Selection } from "../../genetic/methods";
+import { Candidate, Population } from "../../genetic/model";
 
 export function findPassword(password: string) {
 

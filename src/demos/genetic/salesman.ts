@@ -1,5 +1,5 @@
-import { Selection } from "../genetic/methods";
-import { Candidate, Population } from "../genetic/model";
+import { Selection } from "../../genetic/methods";
+import { Candidate, Population } from "../../genetic/model";
 
 export interface Position {
 	x: number;
@@ -98,7 +98,7 @@ function drawSolution(towns: Position[], genes: number[]) {
 	for (const town of towns) {
 		ctx.beginPath();
 		ctx.fillStyle = "blue";
-		ctx.arc(c.width / 10 * town.x, c.height - (c.height / 10 * town.y), 5, 0, 2 * Math.PI);
+		ctx.arc(c.width / 11 * town.x, c.height - (c.height / 11 * town.y), 5, 0, 2 * Math.PI);
 		ctx.fill();
 	}
 	// ctx.strokeStyle = `rgb(
@@ -109,7 +109,7 @@ function drawSolution(towns: Position[], genes: number[]) {
 	ctx.moveTo(towns[genesCopy[0]].x, towns[genesCopy[0]].y);
 	ctx.beginPath();
 	for (const g of genesCopy) {
-		ctx.lineTo(c.width / 10 * towns[g].x, c.height - (c.height / 10 * towns[g].y));
+		ctx.lineTo(c.width / 11 * towns[g].x, c.height - (c.height / 11 * towns[g].y));
 	}
 	ctx.stroke();
 }

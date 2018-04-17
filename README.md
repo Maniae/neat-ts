@@ -1,0 +1,1 @@
+Simplified, typed NEAT algorithms.

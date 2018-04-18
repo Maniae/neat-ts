@@ -1,4 +1,4 @@
-import { Activation } from "./methods";
+import { Activation } from "../methods";
 import { Neuron, NeuronOptions } from "./neuron";
 
 interface LayerOptions {

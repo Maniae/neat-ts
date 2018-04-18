@@ -1,4 +1,4 @@
-import { Activation } from "./methods";
+import { Activation } from "../methods";
 
 export interface NeuronOptions {
 	weights?: number[];

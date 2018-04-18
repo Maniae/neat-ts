@@ -12,7 +12,7 @@ export class Neuron {
 
 	constructor(options: NeuronOptions = {}) {
 		this.weights = options.weights || [];
-		this.activationFunction = options.activationFunction || Activation.SIGMOID;
+		this.activationFunction = options.activationFunction || Activation.TANH;
 		if (options.inputsSize) {
 			if (options.weights) {
 				throw Error("Neuron constructor should be called with either a weight array OR with an input size");

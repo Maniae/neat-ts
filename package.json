@@ -25,7 +25,5 @@
   ],
   "author": "Maniae",
   "license": "ISC",
-  "dependencies": {
-    "immutable": "^3.8.2"
-  }
+  "dependencies": {}
 }

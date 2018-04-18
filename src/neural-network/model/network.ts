@@ -32,7 +32,7 @@ export class Network {
 			const neurons = [];
 			for (let j = 0; j < layersSizes[i]; j++) {
 				neurons.push(new Neuron({
-					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1),
+					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1)
 				}));
 				weightIndex += layersSizes[i - 1];
 			}

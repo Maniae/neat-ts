@@ -1,7 +1,6 @@
 import { Selection } from "../methods";
 import { Crossover } from "../methods/crossover";
 import { Candidate } from "./candidate";
-import { Gene } from "./gene";
 
 interface PopulationOptions<T> {
 	select?: (candidates: Candidate<T>[]) => Candidate<T>[];
@@ -12,7 +11,7 @@ interface PopulationOptions<T> {
 	ellitism?: boolean;
 }
 
-export class Population<T extends Gene> {
+export class Population<T> {
 	candidates: Candidate<T>[];
 	select: (candidates: Candidate<T>[]) => Candidate<T>[];
 	fitness: (genes: T[]) => number;

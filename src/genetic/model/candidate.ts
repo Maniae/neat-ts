@@ -1,10 +1,9 @@
-import { Gene } from "./gene";
 
 interface CandidateOptions<T> {
 	fitness: (genes: T[]) => number;
 }
 
-export class Candidate<T extends Gene> {
+export class Candidate<T> {
 	genes: T[];
 	fitness: (genes: T[]) => number;
 

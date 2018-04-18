@@ -1,5 +1,5 @@
 import { Population } from "../../genetic/model";
-import { Network } from "../../neural-network/network";
+import { Network } from "../../neural-network/model/network";
 
 const layersSizes = [2, 3, 4, 1];
 const WEIGHTS_SIZE = 2 + 3 * (2 + 1) + 4 * (3 + 1) + (4 + 1);

@@ -1,6 +1,6 @@
 import { Layer } from "./layer";
-import { Neuron } from "./neuron";
 import { Activation } from "./methods";
+import { Neuron } from "./neuron";
 
 interface NetworkOptions {
 	layers: Layer[];

@@ -1,6 +1,9 @@
 import { findPassword } from "./demos/genetic/findPassword";
 import { salesman } from "./demos/genetic/salesman";
+import { race } from "./demos/neat/racing/race";
 import { xor } from "./demos/neat/xor";
+
+race();
 
 // xor();
 // findPassword("passwordhardcoretropduratrouver");

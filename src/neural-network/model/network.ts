@@ -8,20 +8,21 @@ interface NetworkOptions {
 export class Network {
 	layers: Layer[];
 
-	static perceptron(layersSizes: number[]) {
+	static perceptron(layersSizes: number[], activationFunction?: (x: number) => number) {
 		return new Network({
 			layers: layersSizes.reduce((layers: Layer[], size, index: number) => {
 				layers.push(new Layer({
 					size,
 					isInputLayer: index === 0,
-					inputsSize: index > 0 ? layers[index - 1].size : undefined
+					inputsSize: index > 0 ? layers[index - 1].size : undefined,
+					activationFunction: index > 0 ? activationFunction : Activation.LINEAR
 				}));
 				return layers;
 			}, [])
 		});
 	}
 
-	static fromWeights(weights: number[], layersSizes: number[]) {
+	static fromWeights(weights: number[], layersSizes: number[], activationFunction?: (x: number) => number) {
 		let weightIndex = 0;
 		const layers = [];
 		layers.push(new Layer({
@@ -32,7 +33,8 @@ export class Network {
 			const neurons = [];
 			for (let j = 0; j < layersSizes[i]; j++) {
 				neurons.push(new Neuron({
-					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1)
+					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1),
+					activationFunction
 				}));
 				weightIndex += layersSizes[i - 1];
 			}

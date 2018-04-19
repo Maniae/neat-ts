@@ -1,4 +1,5 @@
 import { Population } from "../../../genetic/model";
+import { Activation } from "../../../neural-network/methods";
 import { Network } from "../../../neural-network/model/network";
 import { Car } from "./car";
 import { Position } from "./position";
@@ -41,10 +42,10 @@ export function race() {
 			throw Error("failed to load images");
 		}
 		let carsPop = createPopulation();
-		let cars = carsPop.candidates.map(it => new Car(new Position(50, 50), Network.fromWeights(it.genes, [3, 4, 2, 2])));
+		let cars = carsPop.candidates.map(it => new Car(new Position(200, 50), Network.fromWeights(it.genes, [3, 4, 2, 2])));
 		for (let i = 0; i < cars.length; i++) {
 			carsPop.candidates[i].fitness = () => {
-				return cars[i].pos.distanceTo(new Position(50, 50));
+				return cars[i].pos.distanceTo(new Position(200, 50));
 			};
 		}
 		let raceTime = 0;
@@ -52,14 +53,15 @@ export function race() {
 		ctx.drawImage(mapImage, 0, 0);
 		const map = loadMap(mapImage);
 		while (true) {
-			if (raceTime > 5000) {
+			if (raceTime > 10000) {
 				console.log("evolve");
 				raceTime = 0;
 				carsPop = carsPop.createNextGeneration();
-				cars = carsPop.candidates.map(it => new Car(new Position(50, 50), Network.fromWeights(it.genes, [3, 4, 2, 2])));
+				cars = carsPop.candidates.map(it => new Car(new Position(200, 50), Network.fromWeights(it.genes, [3, 4, 2, 2])));
 				for (let i = 0; i < cars.length; i++) {
 					carsPop.candidates[i].fitness = () => {
-						return cars[i].pos.distanceTo(new Position(50, 50));
+						return cars[i].pos.distanceTo(new Position(200, 50));
+						// return cars[i].pos.x + cars[i].pos.y;
 					};
 				}
 			}
@@ -81,7 +83,7 @@ export function race() {
 	function createPopulation() {
 		return Population.generatePopulation(
 			40,
-			() => Network.perceptron([3, 4, 2, 2]).weights,
+			() => Network.perceptron([3, 4, 2, 2], Activation.SIGMOID).weights,
 			{
 				mutate,
 				mutationProbability: 0.4

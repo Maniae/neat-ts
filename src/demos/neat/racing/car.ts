@@ -2,7 +2,9 @@ import { Network } from "../../../neural-network/model/network";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";
 
-const SENSOR_DISTANCE = 80;
+const SENSOR_DISTANCE = 200;
+const MAX_SPEED = 1000;
+const sensorDelta = 1;
 export class Car {
 
 	speed: number = 0;
@@ -17,13 +19,6 @@ export class Car {
 		this.brain = brain;
 	}
 
-	// get direction(): number {
-	// 	if (this.velocity.norm === 0) {
-	// 		return 0;
-	// 	}
-	// 	return Math.acos(this.velocity.x / this.velocity.norm) * (this.velocity.y > this.pos.y ? -1 : 1);
-	// }
-
 	accelerate = () => {
 		this.speed += 10;
 	}
@@ -33,34 +28,43 @@ export class Car {
 	}
 
 	turn = (direction: "right" | "left") => {
-		this.direction += 0.1 * (direction === "right" ? 1 : -1);
-		this.speed *= 0.99;
+		if (!this.frozen) {
+			this.direction += 0.1 * (direction === "right" ? 1 : -1);
+			this.speed *= 0.99;
+		}
 	}
 
 	checkCollisions = (map: number[][]) => {
-		const firstSensorPos = {
-			x: Math.floor(this.pos.x + 18 + SENSOR_DISTANCE * Math.cos(this.direction - Math.PI / 4)),
-			y: Math.floor(this.pos.y + 9 + SENSOR_DISTANCE * Math.sin(this.direction - Math.PI / 4))
-		};
-		const secondSensorPos = {
-			x: Math.floor(this.pos.x + 18 + SENSOR_DISTANCE * Math.cos(this.direction)),
-			y: Math.floor(this.pos.y + 9 + SENSOR_DISTANCE * Math.sin(this.direction))
-		};
-		const thirdSensorPos = {
-			x: Math.floor(this.pos.x + 18 + SENSOR_DISTANCE * Math.cos(this.direction + Math.PI / 4)),
-			y: Math.floor(this.pos.y + 9 + SENSOR_DISTANCE * Math.sin(this.direction + Math.PI / 4))
-		};
-		const sensors = [firstSensorPos, secondSensorPos, thirdSensorPos];
+		const sensorsActivated = [false, false, false];
+		for (let k = 0; k < SENSOR_DISTANCE; k += sensorDelta) {
+			const firstSensorPos = {
+				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction - Math.PI / 4)),
+				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction - Math.PI / 4))
+			};
+			const secondSensorPos = {
+				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction)),
+				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction))
+			};
+			const thirdSensorPos = {
+				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction + Math.PI / 4)),
+				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction + Math.PI / 4))
+			};
+			const sensors = [firstSensorPos, secondSensorPos, thirdSensorPos];
 
-		for (let i = 0; i < 3; i ++) {
-			if (sensors[i].x < 0 || sensors[i].x > map.length - 1 || sensors[i].y < 0 || sensors[i].y > map.length - 1) {
-				this.activatedSensors[i] = 1;
-			} else {
-				if (map[sensors[i].x][sensors[i].y]) {
-					this.activatedSensors[i] = 0;
-				} else {
-					this.activatedSensors[i] = 1;
+			for (let i = 0; i < 3; i ++) {
+				if (sensorsActivated[i]) {
+					continue;
 				}
+				if (sensors[i].x < 0 || sensors[i].x > map.length - 1 || sensors[i].y < 0 || sensors[i].y > map.length - 1) {
+					this.activatedSensors[i] = 1;
+				} else {
+						if (map[sensors[i].x][sensors[i].y]) {
+							this.activatedSensors[i] = 0;
+						} else {
+							this.activatedSensors[i] = (SENSOR_DISTANCE - k) / SENSOR_DISTANCE;
+							sensorsActivated[i] = true;
+						}
+					}
 			}
 		}
 
@@ -85,6 +89,9 @@ export class Car {
 			if (this.speed < 9) {
 				this.speed = 0;
 			}
+			if (this.speed > MAX_SPEED) {
+				this.speed = MAX_SPEED;
+			}
 			this.pos.x += this.speed * Math.cos(this.direction) * delta;
 			this.pos.y += this.speed * Math.sin(this.direction) * delta;
 		}
@@ -94,16 +101,22 @@ export class Car {
 		const brainOutput = brain.activate(this.activatedSensors);
 		const directionDecision = brainOutput[0];
 		const speedDecision = brainOutput[1];
-		if (Math.abs(directionDecision) > 0.5) {
-			this.turn(directionDecision > 0 ? "right" : "left");
+		this.turn(directionDecision > 0.5 ? "right" : "left");
+		if (speedDecision > 0.5) {
+			this.accelerate();
+		} else {
+			this.brake();
 		}
-		if (Math.abs(speedDecision) > 0.5) {
-			if (speedDecision > 0) {
-				this.accelerate();
-			} else {
-				this.brake();
-			}
-		}
+		// if (Math.abs(directionDecision) > 0.5) {
+		// 	this.turn(directionDecision > 0 ? "right" : "left");
+		// }
+		// if (Math.abs(speedDecision) > 0.5) {
+		// 	if (speedDecision > 0) {
+		// 		this.accelerate();
+		// 	} else {
+		// 		this.brake();
+		// 	}
+		// }
 	}
 
 	draw = (ctx: CanvasRenderingContext2D, image: HTMLImageElement) => {
@@ -114,23 +127,25 @@ export class Car {
 		ctx.rotate(this.direction);
 		ctx.drawImage(image, -18, -9, 36, 18);
 
-		ctx.beginPath();
-		ctx.strokeStyle = this.activatedSensors[0] ? "red" : "blue";
-		ctx.moveTo(0, 0);
-		ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), -SENSOR_DISTANCE / Math.sqrt(2));
-		ctx.stroke();
+		if (!this.frozen) {
+			ctx.beginPath();
+			ctx.strokeStyle = this.activatedSensors[0] ? "red" : "blue";
+			ctx.moveTo(0, 0);
+			ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), -SENSOR_DISTANCE / Math.sqrt(2));
+			ctx.stroke();
 
-		ctx.beginPath();
-		ctx.strokeStyle = this.activatedSensors[1] ? "red" : "blue";
-		ctx.moveTo(0, 0);
-		ctx.lineTo(SENSOR_DISTANCE, 0);
-		ctx.stroke();
+			ctx.beginPath();
+			ctx.strokeStyle = this.activatedSensors[1] ? "red" : "blue";
+			ctx.moveTo(0, 0);
+			ctx.lineTo(SENSOR_DISTANCE, 0);
+			ctx.stroke();
 
-		ctx.beginPath();
-		ctx.strokeStyle = this.activatedSensors[2] ? "red" : "blue";
-		ctx.moveTo(0, 0);
-		ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), SENSOR_DISTANCE / Math.sqrt(2));
-		ctx.stroke();
+			ctx.beginPath();
+			ctx.strokeStyle = this.activatedSensors[2] ? "red" : "blue";
+			ctx.moveTo(0, 0);
+			ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), SENSOR_DISTANCE / Math.sqrt(2));
+			ctx.stroke();
+		}
 
 		ctx.restore();
 	}

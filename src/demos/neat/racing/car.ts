@@ -1,17 +1,21 @@
 import { Network } from "../../../neural-network/model/network";
+import { Position } from "./position";
 import { Vector2 } from "./vector2";
 
 const SENSOR_DISTANCE = 80;
-export interface Position { x: number; y: number; }
-
 export class Car {
 
 	speed: number = 0;
 	direction: number = Math.PI / 4;
 	brain?: Network;
 	activatedSensors: number[] = [0, 0, 0];
+	frozen: boolean = false;
+	pos: Position;
 
-	constructor(public pos: Position) {}
+	constructor(pos: Position, brain?: Network) {
+		this.pos = pos;
+		this.brain = brain;
+	}
 
 	// get direction(): number {
 	// 	if (this.velocity.norm === 0) {
@@ -49,26 +53,57 @@ export class Car {
 		const sensors = [firstSensorPos, secondSensorPos, thirdSensorPos];
 
 		for (let i = 0; i < 3; i ++) {
-			if (map[sensors[i].y][sensors[i].x]) {
-				this.activatedSensors[i] = 0;
-			} else {
+			if (sensors[i].x < 0 || sensors[i].x > map.length - 1 || sensors[i].y < 0 || sensors[i].y > map.length - 1) {
 				this.activatedSensors[i] = 1;
+			} else {
+				if (map[sensors[i].x][sensors[i].y]) {
+					this.activatedSensors[i] = 0;
+				} else {
+					this.activatedSensors[i] = 1;
+				}
 			}
+		}
+
+		try {
+			if (!map[Math.floor(this.pos.x)][Math.floor(this.pos.y)]) {
+				this.frozen = true;
+			}
+		} catch (e) {
+			console.log("failed to check position", Math.floor(this.pos.x), Math.floor(this.pos.y));
+			throw e;
 		}
 	}
 
 	update = (map: number[][], delta: number) => {
-		// if (!this.brain) {
-		// 	throw Error("This car has no brain");
-		// }
-		// this.brain.activate(this.getSensorInputs);
-		this.checkCollisions(map);
-		this.speed *= 0.999;
-		if (this.speed < 9) {
-			this.speed = 0;
+		if (!this.brain) {
+			throw Error("This car has no brain");
 		}
-		this.pos.x += this.speed * Math.cos(this.direction) * delta;
-		this.pos.y += this.speed * Math.sin(this.direction) * delta;
+		this.makeDecision(this.brain);
+		if (!this.frozen) {
+			this.checkCollisions(map);
+			this.speed *= 0.999;
+			if (this.speed < 9) {
+				this.speed = 0;
+			}
+			this.pos.x += this.speed * Math.cos(this.direction) * delta;
+			this.pos.y += this.speed * Math.sin(this.direction) * delta;
+		}
+	}
+
+	makeDecision = (brain: Network) => {
+		const brainOutput = brain.activate(this.activatedSensors);
+		const directionDecision = brainOutput[0];
+		const speedDecision = brainOutput[1];
+		if (Math.abs(directionDecision) > 0.5) {
+			this.turn(directionDecision > 0 ? "right" : "left");
+		}
+		if (Math.abs(speedDecision) > 0.5) {
+			if (speedDecision > 0) {
+				this.accelerate();
+			} else {
+				this.brake();
+			}
+		}
 	}
 
 	draw = (ctx: CanvasRenderingContext2D, image: HTMLImageElement) => {
@@ -82,7 +117,7 @@ export class Car {
 		ctx.beginPath();
 		ctx.strokeStyle = this.activatedSensors[0] ? "red" : "blue";
 		ctx.moveTo(0, 0);
-		ctx.lineTo(SENSOR_DISTANCE, -SENSOR_DISTANCE);
+		ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), -SENSOR_DISTANCE / Math.sqrt(2));
 		ctx.stroke();
 
 		ctx.beginPath();
@@ -94,7 +129,7 @@ export class Car {
 		ctx.beginPath();
 		ctx.strokeStyle = this.activatedSensors[2] ? "red" : "blue";
 		ctx.moveTo(0, 0);
-		ctx.lineTo(SENSOR_DISTANCE, SENSOR_DISTANCE);
+		ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), SENSOR_DISTANCE / Math.sqrt(2));
 		ctx.stroke();
 
 		ctx.restore();

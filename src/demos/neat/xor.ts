@@ -25,11 +25,7 @@ export function xor() {
 	};
 
 	const generateRandomWeights = () => {
-		const weights = [];
-		for (let i = 0; i < WEIGHTS_SIZE; i++) {
-			weights.push(Math.random() * 2 - 1);
-		}
-		return weights;
+		return Network.perceptron([2, 3, 4, 1]).weights;
 	};
 
 	let pop = Population.generatePopulation(

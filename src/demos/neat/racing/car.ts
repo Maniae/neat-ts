@@ -1,4 +1,5 @@
 import { Network } from "../../../neural-network/model/network";
+import { Map } from "./map";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";
 
@@ -13,6 +14,9 @@ export class Car {
 	activatedSensors: number[] = [0, 0, 0];
 	frozen: boolean = false;
 	pos: Position;
+	checkPoints: number = 0;
+	lastCheckPoint: number | null = null;
+	distanceToLastCheckPoint: number = 0;
 
 	constructor(pos: Position, brain?: Network) {
 		this.pos = pos;
@@ -34,7 +38,7 @@ export class Car {
 		}
 	}
 
-	checkCollisions = (map: number[][]) => {
+	checkCollisions = (map: Map, nextPosX: number, nextPosY: number) => {
 		const sensorsActivated = [false, false, false];
 		for (let k = 0; k < SENSOR_DISTANCE; k += sensorDelta) {
 			const firstSensorPos = {
@@ -55,10 +59,15 @@ export class Car {
 				if (sensorsActivated[i]) {
 					continue;
 				}
-				if (sensors[i].x < 0 || sensors[i].x > map.length - 1 || sensors[i].y < 0 || sensors[i].y > map.length - 1) {
+				if (
+					sensors[i].x < 0
+					|| sensors[i].x > map.collisionMap.length - 1
+					|| sensors[i].y < 0
+					|| sensors[i].y > map.collisionMap.length - 1
+				) {
 					this.activatedSensors[i] = 1;
 				} else {
-						if (map[sensors[i].x][sensors[i].y]) {
+						if (map.collisionMap[sensors[i].x][sensors[i].y]) {
 							this.activatedSensors[i] = 0;
 						} else {
 							this.activatedSensors[i] = (SENSOR_DISTANCE - k) / SENSOR_DISTANCE;
@@ -69,22 +78,33 @@ export class Car {
 		}
 
 		try {
-			if (!map[Math.floor(this.pos.x)][Math.floor(this.pos.y)]) {
+			if (!map.collisionMap[Math.floor(this.pos.x)][Math.floor(this.pos.y)]) {
 				this.frozen = true;
 			}
 		} catch (e) {
 			console.log("failed to check position", Math.floor(this.pos.x), Math.floor(this.pos.y));
 			throw e;
 		}
+
+		for (let i = 0; i < map.checkPoints.length; i++) {
+			const checkPoint = map.checkPoints[i];
+			if (this.lastCheckPoint !== i && checkPoint.passed(this.pos, new Position(nextPosX, nextPosY))) {
+				this.lastCheckPoint = i;
+				this.checkPoints ++;
+			}
+		}
 	}
 
-	update = (map: number[][], delta: number) => {
+	update = (map: Map, delta: number) => {
 		if (!this.brain) {
 			throw Error("This car has no brain");
 		}
 		this.makeDecision(this.brain);
 		if (!this.frozen) {
-			this.checkCollisions(map);
+			const nextPosX = this.pos.x + this.speed * Math.cos(this.direction) * delta;
+			const nextPosY = this.pos.y + this.speed * Math.sin(this.direction) * delta;
+
+			this.checkCollisions(map, nextPosX, nextPosY);
 			this.speed *= 0.999;
 			if (this.speed < 9) {
 				this.speed = 0;
@@ -92,8 +112,9 @@ export class Car {
 			if (this.speed > MAX_SPEED) {
 				this.speed = MAX_SPEED;
 			}
-			this.pos.x += this.speed * Math.cos(this.direction) * delta;
-			this.pos.y += this.speed * Math.sin(this.direction) * delta;
+			this.distanceToLastCheckPoint = this.lastCheckPoint == null ? 0 : map.checkPoints[this.lastCheckPoint].distanceTo(this.pos);
+			this.pos.x = nextPosX;
+			this.pos.y = nextPosY;
 		}
 	}
 
@@ -101,8 +122,12 @@ export class Car {
 		const brainOutput = brain.activate(this.activatedSensors);
 		const directionDecision = brainOutput[0];
 		const speedDecision = brainOutput[1];
-		this.turn(directionDecision > 0.5 ? "right" : "left");
-		if (speedDecision > 0.5) {
+		if (directionDecision > 0.7) {
+			this.turn("right");
+		} else if (directionDecision < 0.3) {
+			this.turn("left");
+		}
+		if (speedDecision > 0.4) {
 			this.accelerate();
 		} else {
 			this.brake();

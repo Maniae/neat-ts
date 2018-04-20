@@ -73,10 +73,36 @@ export function race() {
 		ctx.drawImage(mapImage, 0, 0);
 		const map = loadMap(mapImage, checkPoints);
 		let generation = 0;
-		while (true) {
-			if (raceTime > (generation < 10 ? 5000 : 10000 )) {
+
+		while (generation < 30) {
+			if (raceTime > 10000 ) {
+				console.log(generation);
 				generation++;
-				console.log("generation", generation);
+				raceTime = 0;
+				carsPop = carsPop.createNextGeneration();
+				cars = carsPop.candidates.map(
+					it => new Car(new Position(200, 50), Network.fromWeights(it.genes, [3, 4, 4, 2]))
+				);
+				for (let i = 0; i < cars.length; i++) {
+						carsPop.candidates[i].fitness = () => {
+							return cars[i].checkPoints * 1000;
+						};
+				}
+			}
+			cars.map(it => {
+				it.update(map, dt / 1000);
+			});
+			// cars[0].draw(ctx, carImage);
+			raceTime = raceTime + dt;
+		}
+		requestAnimationFrame(loop);
+
+		let t0 = Date.now();
+		function loop() {
+			if (raceTime > 60000) {
+				generation++;
+				console.log("generation", generation, Date.now() - t0, raceTime);
+				t0 = Date.now();
 				raceTime = 0;
 				console.table(carsPop.candidates.sort((a, b) => b.fitness([]) - a.fitness([])).slice(0, 10).map(it => it.fitness([])));
 				carsPop = carsPop.createNextGeneration();
@@ -92,20 +118,15 @@ export function race() {
 			ctx.clearRect(0, 0, c.width, c.height);
 			drawCheckPoints(map.checkPoints);
 			ctx.drawImage(mapImage, 0, 0);
-			if (dt > 50) {
-				console.log("BOOM");
-				raceTime = raceTime + dt;
-				continue;
-			}
 			cars.map(it => {
 				it.update(map, dt / 1000);
 				it.draw(ctx, carImage);
 			});
 			// cars[0].draw(ctx, carImage);
 			raceTime = raceTime + dt;
-			const waitTime = Math.max(0, (1000 / 60) - dt);
+			// const waitTime = Math.max(0, (1000 / 60) - dt);
 			// const waitTime = dt;
-			await new Promise(resolve => setTimeout(resolve, waitTime));
+			requestAnimationFrame(loop);
 		}
 	}
 

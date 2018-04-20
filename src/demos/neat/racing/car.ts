@@ -122,26 +122,16 @@ export class Car {
 		const brainOutput = brain.activate(this.activatedSensors);
 		const directionDecision = brainOutput[0];
 		const speedDecision = brainOutput[1];
-		if (directionDecision > 0.7) {
+		if (directionDecision > 0) {
 			this.turn("right");
-		} else if (directionDecision < 0.3) {
+		} else {
 			this.turn("left");
 		}
-		if (speedDecision > 0.4) {
+		if (speedDecision > 0) {
 			this.accelerate();
 		} else {
 			this.brake();
 		}
-		// if (Math.abs(directionDecision) > 0.5) {
-		// 	this.turn(directionDecision > 0 ? "right" : "left");
-		// }
-		// if (Math.abs(speedDecision) > 0.5) {
-		// 	if (speedDecision > 0) {
-		// 		this.accelerate();
-		// 	} else {
-		// 		this.brake();
-		// 	}
-		// }
 	}
 
 	draw = (ctx: CanvasRenderingContext2D, image: HTMLImageElement) => {

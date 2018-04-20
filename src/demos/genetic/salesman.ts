@@ -60,8 +60,9 @@ export function salesman(towns: Position[]) {
 	);
 
 	const step = () => {
-		drawSolution(towns, pop.candidates[0].genes);
-		// pop.candidates.map(it => drawSolution(towns, it.genes));
+		pop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
+		// pop.candidates.map((it, index) => drawSolution(towns, it.genes, "blue"));
+		drawSolution(towns, pop.candidates[0].genes, "green");
 		document.getElementById("score")!.innerHTML = "" + pop.candidates[0].fitness(pop.candidates[0].genes);
 		pop = pop.createNextGeneration();
 		requestAnimationFrame(step);
@@ -91,10 +92,10 @@ function shuffleArray(array: any[]) {
 	}
 }
 
-function drawSolution(towns: Position[], genes: number[]) {
+function drawSolution(towns: Position[], genes: number[], color?: string) {
+	ctx.clearRect(0, 0, c.width, c.height);
 	const genesCopy = genes.slice(0);
 	genesCopy.push(genes[0]);
-	ctx.clearRect(0, 0, c.width, c.height);
 	for (const town of towns) {
 		ctx.beginPath();
 		ctx.fillStyle = "blue";
@@ -108,6 +109,9 @@ function drawSolution(towns: Position[], genes: number[]) {
 	// )`;
 	ctx.moveTo(towns[genesCopy[0]].x, towns[genesCopy[0]].y);
 	ctx.beginPath();
+	if (color) {
+		ctx.strokeStyle = color;
+	}
 	for (const g of genesCopy) {
 		ctx.lineTo(c.width / 11 * towns[g].x, c.height - (c.height / 11 * towns[g].y));
 	}

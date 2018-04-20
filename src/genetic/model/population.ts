@@ -52,31 +52,40 @@ export class Population<T> {
 		 * Select stronger candidates
 		 */
 		const selectedCandidates = this.select(this.candidates);
-
 		/**
 		 * Cross stronger candidates and mutates their children
 		 */
+
 		const newCandidates = this.crossCandidates(selectedCandidates);
+
 		/**
 		 * Add the children to the population
 		 */
-		const newGeneration = this.candidates.concat(newCandidates);
+		// const newGeneration = this.candidates.concat(newCandidates);
 
 		/**
 		 * Keep the stronger candidates
 		 */
-		const cleanedNewGeneration = newGeneration
+
+		const bestElders = this.candidates
 			.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))
-			.slice(0, this.candidates.length - +this.ellitism);
+			.slice(0, this.candidates.length - newCandidates.length);
 
-		if (this.ellitism) {
-			// Keep the best oldest candidate
-			cleanedNewGeneration.push(
-				this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[this.candidates.length - 1]
-			);
-		}
+		const newPopulation = newCandidates.concat(bestElders);
 
-		return new Population(cleanedNewGeneration, this.getOptions());
+		// const cleanedNewGeneration = newGeneration
+		// 	.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))
+		// 	.slice(0, this.candidates.length - +this.ellitism);
+
+		// if (this.ellitism) {
+		// 	// Keep the best oldest candidate
+		// 	console.log(this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[0].fitness([]));
+		// 	cleanedNewGeneration.push(
+		// 		this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[0]
+		// 	);
+		// }
+
+		return new Population(newPopulation, this.getOptions());
 	}
 
 	crossCandidates = (candidates: Candidate<T>[]): Candidate<T>[] => {

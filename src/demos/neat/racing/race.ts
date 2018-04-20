@@ -1,3 +1,4 @@
+import { Selection } from "../../../genetic/methods";
 import { Population } from "../../../genetic/model";
 import { Activation } from "../../../neural-network/methods";
 import { Network } from "../../../neural-network/model/network";
@@ -7,9 +8,22 @@ import * as checkPoints from "./checkPoints.json";
 import { Map } from "./map";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";
-import { Selection } from "../../../genetic/methods";
 
-window.onclick = e => console.log(e.clientX - 20, e.clientY - 20);
+// let pos1: Position | null = null;
+// const pos: any[] = [];
+// window.onclick = e => {
+// 	if (!pos1) {
+// 		pos1 = new Position(e.clientX - 20, e.clientY - 20);
+// 	} else {
+// 		const pos2 = new Position(e.clientX - 20, e.clientY - 20);
+// 		const cp = new CheckPoint(pos1, pos2);
+// 		pos.push(cp);
+// 		pos1 = null;
+// 		console.log(JSON.stringify(pos));
+// 	}
+// };
+const dt = 20;
+
 export function race() {
 	const c = document.getElementById("canvas") as HTMLCanvasElement;
 	const ctx = c.getContext("2d")!;
@@ -47,37 +61,39 @@ export function race() {
 			throw Error("failed to load images");
 		}
 		let carsPop = createPopulation();
-		let cars = carsPop.candidates.map(it => new Car(new Position(780, 80), Network.fromWeights(it.genes, [3, 4, 2, 2])));
+		let cars = carsPop.candidates.map(it => new Car(new Position(200, 50), Network.fromWeights(it.genes, [3, 4, 4, 2])));
 		for (let i = 0; i < cars.length; i++) {
 			carsPop.candidates[i].fitness = () => {
-				return cars[i].checkPoints;
+				return cars[i].checkPoints * 1000;
+				// return cars[i].pos.distanceTo(new Position(200, 50));
+				// return 1 - (cars[i].pos.x + cars[i].pos.y);
 			};
 		}
 		let raceTime = 0;
 		ctx.drawImage(mapImage, 0, 0);
 		const map = loadMap(mapImage, checkPoints);
-		let t0 = Date.now();
+		let generation = 0;
 		while (true) {
-			if (raceTime > 5000) {
-				console.log("evolve");
+			if (raceTime > (generation < 10 ? 5000 : 10000 )) {
+				generation++;
+				console.log("generation", generation);
 				raceTime = 0;
+				console.table(carsPop.candidates.sort((a, b) => b.fitness([]) - a.fitness([])).slice(0, 10).map(it => it.fitness([])));
 				carsPop = carsPop.createNextGeneration();
-				cars = carsPop.candidates.map(it => new Car(new Position(780, 80), Network.fromWeights(it.genes, [3, 4, 2, 2])));
+				cars = carsPop.candidates.map(
+					it => new Car(new Position(200, 50), Network.fromWeights(it.genes, [3, 4, 4, 2]))
+				);
 				for (let i = 0; i < cars.length; i++) {
-					carsPop.candidates[i].fitness = () => {
-						return cars[i].checkPoints * 1000 + cars[i].distanceToLastCheckPoint;
-						// return cars[i].pos.distanceTo(new Position(780, 80));
-						// return cars[i].pos.x + cars[i].pos.y;
-					};
+						carsPop.candidates[i].fitness = () => {
+							return cars[i].checkPoints * 1000;
+						};
 				}
 			}
 			ctx.clearRect(0, 0, c.width, c.height);
 			drawCheckPoints(map.checkPoints);
 			ctx.drawImage(mapImage, 0, 0);
-			const t1 = Date.now();
-			const dt = t1 - t0;
 			if (dt > 50) {
-				t0 = t1;
+				console.log("BOOM");
 				raceTime = raceTime + dt;
 				continue;
 			}
@@ -85,9 +101,10 @@ export function race() {
 				it.update(map, dt / 1000);
 				it.draw(ctx, carImage);
 			});
-			t0 = t1;
+			// cars[0].draw(ctx, carImage);
 			raceTime = raceTime + dt;
 			const waitTime = Math.max(0, (1000 / 60) - dt);
+			// const waitTime = dt;
 			await new Promise(resolve => setTimeout(resolve, waitTime));
 		}
 	}
@@ -95,7 +112,7 @@ export function race() {
 	function createPopulation() {
 		return Population.generatePopulation(
 			100,
-			() => Network.perceptron([3, 4, 2, 2], Activation.SIGMOID).weights,
+			() => Network.perceptron([3, 4, 4, 2]).weights,
 			{
 				mutate,
 				mutationProbability: 0.4

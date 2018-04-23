@@ -9,20 +9,7 @@ import { Map } from "./map";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";
 
-// let pos1: Position | null = null;
-// const pos: any[] = [];
-// window.onclick = e => {
-// 	if (!pos1) {
-// 		pos1 = new Position(e.clientX - 20, e.clientY - 20);
-// 	} else {
-// 		const pos2 = new Position(e.clientX - 20, e.clientY - 20);
-// 		const cp = new CheckPoint(pos1, pos2);
-// 		pos.push(cp);
-// 		pos1 = null;
-// 		console.log(JSON.stringify(pos));
-// 	}
-// };
-const dt = 20;
+const dt = 1000 / 60;
 
 export function race() {
 	const c = document.getElementById("canvas") as HTMLCanvasElement;

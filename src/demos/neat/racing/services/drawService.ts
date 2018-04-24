@@ -1,12 +1,8 @@
 import { Car } from "../car";
 import { CheckPoint } from "../checkPoint";
+import * as checkPoints from "../checkPoints.json";
 import { Map } from "../map";
-import * as checkPoints from "./checkPoints.json";
 import { GameService } from "./gameService";
-
-const carWidth = 36;
-const carHeight = 18;
-const sensorRange = 200;
 
 const carImage = new Image();
 carImage.src = "/assets/car.png";
@@ -40,16 +36,16 @@ export class DrawService {
 	drawCar = (car: Car) => {
 		this.ctx.save();
 		this.ctx.translate(car.pos.x, car.pos.y);
-		this.ctx.translate(carWidth / 2, carHeight / 2);
+		this.ctx.translate(car.width / 2, car.height / 2);
 		this.ctx.rotate(car.direction);
-		this.ctx.drawImage(carImage, -carWidth / 2, -carHeight / 2, carWidth, carHeight);
+		this.ctx.drawImage(carImage, -car.width / 2, -car.height / 2, car.width, car.height);
 		if (!car.frozen) {
 			this.ctx.strokeStyle = car.activatedSensors[0] ? "red" : "blue";
-			this.drawLine(0, 0, sensorRange / Math.SQRT2, -sensorRange / Math.SQRT2);
+			this.drawLine(0, 0, car.sensorRange / Math.SQRT2, -car.sensorRange / Math.SQRT2);
 			this.ctx.strokeStyle = car.activatedSensors[1] ? "red" : "blue";
-			this.drawLine(0, 0, sensorRange, 0);
+			this.drawLine(0, 0, car.sensorRange, 0);
 			this.ctx.strokeStyle = car.activatedSensors[2] ? "red" : "blue";
-			this.drawLine(0, 0, sensorRange / Math.SQRT2, sensorRange / Math.SQRT2);
+			this.drawLine(0, 0, car.sensorRange / Math.SQRT2, car.sensorRange / Math.SQRT2);
 		}
 		this.ctx.restore();
 	}
@@ -62,6 +58,7 @@ export class DrawService {
 	}
 
 	loadMap = () => {
+		this.ctx.drawImage(mapImage, 0, 0);
 		const collisionMap: number[][] = [];
 		for (let x = 0; x < mapImage.width; x ++) {
 			const row = [];
@@ -78,7 +75,6 @@ export class DrawService {
 
 const loadImage = (image: HTMLImageElement) => new Promise<HTMLImageElement>((resolve, reject) => {
 	image.onload = () => {
-		console.log("resolved", image.src);
 		resolve(image);
 	};
 	if (image.complete) {

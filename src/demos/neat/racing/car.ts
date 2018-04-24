@@ -3,11 +3,13 @@ import { Map } from "./map";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";
 
-const SENSOR_DISTANCE = 200;
-const MAX_SPEED = 1000;
 const sensorDelta = 1;
 export class Car {
 
+	readonly sensorRange = 200;
+	readonly width = 36;
+	readonly height = 18;
+	readonly maxSpeed = 1000;
 	speed: number = 0;
 	direction: number = Math.PI / 4;
 	brain?: Network;
@@ -18,8 +20,8 @@ export class Car {
 	lastCheckPoint: number | null = null;
 	distanceToLastCheckPoint: number = 0;
 
-	constructor(pos: Position, brain?: Network) {
-		this.pos = pos;
+	constructor(x: number, y: number, brain?: Network) {
+		this.pos = new Position(x, y);
 		this.brain = brain;
 	}
 
@@ -40,18 +42,18 @@ export class Car {
 
 	checkCollisions = (map: Map, nextPosX: number, nextPosY: number) => {
 		const sensorsActivated = [false, false, false];
-		for (let k = 0; k < SENSOR_DISTANCE; k += sensorDelta) {
+		for (let k = 0; k < this.sensorRange; k += sensorDelta) {
 			const firstSensorPos = {
-				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction - Math.PI / 4)),
-				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction - Math.PI / 4))
+				x: Math.floor(this.pos.x + this.width / 2 + k * Math.cos(this.direction - Math.PI / 4)),
+				y: Math.floor(this.pos.y + this.height / 2 + k * Math.sin(this.direction - Math.PI / 4))
 			};
 			const secondSensorPos = {
-				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction)),
-				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction))
+				x: Math.floor(this.pos.x + this.width / 2 + k * Math.cos(this.direction)),
+				y: Math.floor(this.pos.y + this.height / 2 + k * Math.sin(this.direction))
 			};
 			const thirdSensorPos = {
-				x: Math.floor(this.pos.x + 18 + k * Math.cos(this.direction + Math.PI / 4)),
-				y: Math.floor(this.pos.y + 9 + k * Math.sin(this.direction + Math.PI / 4))
+				x: Math.floor(this.pos.x + this.width / 2 + k * Math.cos(this.direction + Math.PI / 4)),
+				y: Math.floor(this.pos.y + this.height / 2 + k * Math.sin(this.direction + Math.PI / 4))
 			};
 			const sensors = [firstSensorPos, secondSensorPos, thirdSensorPos];
 
@@ -70,7 +72,7 @@ export class Car {
 						if (map.collisionMap[sensors[i].x][sensors[i].y]) {
 							this.activatedSensors[i] = 0;
 						} else {
-							this.activatedSensors[i] = (SENSOR_DISTANCE - k) / SENSOR_DISTANCE;
+							this.activatedSensors[i] = (this.sensorRange - k) / this.sensorRange;
 							sensorsActivated[i] = true;
 						}
 					}
@@ -105,8 +107,8 @@ export class Car {
 			if (this.speed < 9) {
 				this.speed = 0;
 			}
-			if (this.speed > MAX_SPEED) {
-				this.speed = MAX_SPEED;
+			if (this.speed > this.maxSpeed) {
+				this.speed = this.maxSpeed;
 			}
 			this.distanceToLastCheckPoint = this.lastCheckPoint == null ? 0 : map.checkPoints[this.lastCheckPoint].distanceTo(this.pos);
 			this.pos.x = nextPosX;

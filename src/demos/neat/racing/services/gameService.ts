@@ -5,7 +5,7 @@ import * as checkPoints from "./checkPoints.json";
 import { DrawService } from "./drawService";
 import { RaceService } from "./raceService";
 
-const dt = 1000 / 60;
+const dt = 20;
 export class GameService {
 
 	generation = 0;
@@ -30,6 +30,7 @@ export class GameService {
 	update = () => {
 		if (this.raceTime > this.raceDuration) {
 			this.raceService.onRaceEnded();
+			this.raceTime = 0;
 		}
 		this.raceService.update();
 		this.raceService.cars.map(it => it.update(this.map, dt / 1000));

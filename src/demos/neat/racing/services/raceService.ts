@@ -3,8 +3,9 @@ import { Network } from "../../../../neural-network/model/network";
 import { Car } from "../car";
 import { Position } from "../position";
 
-const startPosition = new Position(200, 50);
-const layersSizes = [3, 4, 4, 2];
+const startPositionX = 200;
+const startPositionY = 50;
+const layersSizes = [4, 4, 4, 2];
 
 export class RaceService {
 
@@ -19,13 +20,15 @@ export class RaceService {
 			100,
 			() => Network.perceptron(layersSizes).weights,
 			{
-				mutate,
+				mutate: this.mutate,
 				mutationProbability: 0.4
 			}
 		);
-		this.cars = this.carsPop.candidates.map(it => new Car(startPosition, Network.fromWeights(it.genes, layersSizes)));
+		this.cars = this.carsPop.candidates.map(
+			it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
+		);
 		this.carsPop.candidates.map((it, i) => {
-			it.fitness = fitness(i);
+			it.fitness = this.fitness(i);
 		});
 	}
 
@@ -37,7 +40,7 @@ export class RaceService {
 			if (!car.brain) {
 				throw Error("This car has no brain");
 			}
-			const brainOutput = car.brain.activate(car.activatedSensors);
+			const brainOutput = car.brain.activate([...car.activatedSensors, car.speed / car.maxSpeed]);
 			const directionDecision = brainOutput[0];
 			const speedDecision = brainOutput[1];
 			if (directionDecision > 0) {
@@ -58,10 +61,22 @@ export class RaceService {
 		 * Called on every race timeout
 		 */
 		this.carsPop = this.carsPop.createNextGeneration();
-		this.cars = this.carsPop.candidates.map(it => new Car(startPosition, Network.fromWeights(it.genes, layersSizes)));
+		this.cars = this.carsPop.candidates.map(
+			it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
+		);
 		this.carsPop.candidates.map((it, i) => {
-			it.fitness = fitness(i);
+			it.fitness = this.fitness(i);
 		});
+	}
 
+	mutate = (genes: number[]) => {
+		const genesCopy = genes.slice(0);
+		const randomIndex = Math.floor(Math.random() * genes.length);
+		genesCopy[randomIndex] = Math.random() * 2 - 1;
+		return genesCopy;
+	}
+
+	fitness = (index: number) => () => {
+		return this.cars[index].checkPoints * 1000;
 	}
 }

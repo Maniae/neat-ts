@@ -96,10 +96,6 @@ export class Car {
 	}
 
 	update = (map: Map, delta: number) => {
-		if (!this.brain) {
-			throw Error("This car has no brain");
-		}
-		this.makeDecision(this.brain);
 		if (!this.frozen) {
 			const nextPosX = this.pos.x + this.speed * Math.cos(this.direction) * delta;
 			const nextPosY = this.pos.y + this.speed * Math.sin(this.direction) * delta;
@@ -116,52 +112,5 @@ export class Car {
 			this.pos.x = nextPosX;
 			this.pos.y = nextPosY;
 		}
-	}
-
-	makeDecision = (brain: Network) => {
-		const brainOutput = brain.activate(this.activatedSensors);
-		const directionDecision = brainOutput[0];
-		const speedDecision = brainOutput[1];
-		if (directionDecision > 0) {
-			this.turn("right");
-		} else {
-			this.turn("left");
-		}
-		if (speedDecision > 0) {
-			this.accelerate();
-		} else {
-			this.brake();
-		}
-	}
-
-	draw = (ctx: CanvasRenderingContext2D, image: HTMLImageElement) => {
-
-		ctx.save();
-		ctx.translate(this.pos.x, this.pos.y);
-		ctx.translate(18, 9);
-		ctx.rotate(this.direction);
-		ctx.drawImage(image, -18, -9, 36, 18);
-
-		if (!this.frozen) {
-			ctx.beginPath();
-			ctx.strokeStyle = this.activatedSensors[0] ? "red" : "blue";
-			ctx.moveTo(0, 0);
-			ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), -SENSOR_DISTANCE / Math.sqrt(2));
-			ctx.stroke();
-
-			ctx.beginPath();
-			ctx.strokeStyle = this.activatedSensors[1] ? "red" : "blue";
-			ctx.moveTo(0, 0);
-			ctx.lineTo(SENSOR_DISTANCE, 0);
-			ctx.stroke();
-
-			ctx.beginPath();
-			ctx.strokeStyle = this.activatedSensors[2] ? "red" : "blue";
-			ctx.moveTo(0, 0);
-			ctx.lineTo(SENSOR_DISTANCE / Math.sqrt(2), SENSOR_DISTANCE / Math.sqrt(2));
-			ctx.stroke();
-		}
-
-		ctx.restore();
 	}
 }

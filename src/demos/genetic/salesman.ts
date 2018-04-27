@@ -102,11 +102,6 @@ function drawSolution(towns: Position[], genes: number[], color?: string) {
 		ctx.arc(c.width / 11 * town.x, c.height - (c.height / 11 * town.y), 5, 0, 2 * Math.PI);
 		ctx.fill();
 	}
-	// ctx.strokeStyle = `rgb(
-	// 	${Math.floor(Math.random() * 255)},
-	// 	${Math.floor(Math.random() * 255)},
-	// 	${Math.floor(Math.random() * 255)}
-	// )`;
 	ctx.moveTo(towns[genesCopy[0]].x, towns[genesCopy[0]].y);
 	ctx.beginPath();
 	if (color) {

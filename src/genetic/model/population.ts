@@ -61,7 +61,6 @@ export class Population<T> {
 		/**
 		 * Add the children to the population
 		 */
-		// const newGeneration = this.candidates.concat(newCandidates);
 
 		/**
 		 * Keep the stronger candidates

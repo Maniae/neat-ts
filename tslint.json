@@ -20,7 +20,6 @@
 		"interface-name": [false],
 		"arrow-parens": false,
 		"array-type": [true, "array"],
-		"variable-name": [true, "check-format", "allow-leading-underscore"],
 		"max-line-length": [true, 130],
 		"prefer-for-of": false
 	}

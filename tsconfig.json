@@ -5,6 +5,7 @@
 		"sourceMap": true,
 		"target": "es2015",
 		"outDir": "./dist",
+		"jsx": "react",
 		"moduleResolution": "node"
 	},
 	"awesomeTypescriptLoaderOptions": {

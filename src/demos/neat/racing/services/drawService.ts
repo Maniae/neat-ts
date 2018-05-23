@@ -1,7 +1,7 @@
-import { Car } from "../car";
-import { CheckPoint } from "../checkPoint";
-import * as checkPoints from "../checkPoints.json";
-import { Map } from "../map";
+import * as checkPoints from "../data/checkPoints.json";
+import { Car } from "../domain/car";
+import { CheckPoint } from "../domain/checkPoint";
+import { Map } from "../domain/map";
 import { GameService } from "./gameService";
 
 const carImage = new Image();
@@ -11,10 +11,12 @@ mapImage.src = "/assets/raceMap.png";
 
 export class DrawService {
 
-	private canvas: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-	private ctx: CanvasRenderingContext2D = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+	private canvas: HTMLCanvasElement = null as any;
+	private ctx: CanvasRenderingContext2D = null as any;
 
 	init = async () => {
+		this.canvas = document.querySelector("canvas") as HTMLCanvasElement;
+		this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 		await loadImage(carImage);
 		await loadImage(mapImage);
 	}

@@ -1,7 +1,7 @@
 import { Population } from "../../../../genetic/model";
 import { Network } from "../../../../neural-network/model/network";
-import { Car } from "../car";
-import { Position } from "../position";
+import { Car } from "../domain/car";
+import { Position } from "../domain/position";
 
 const startPositionX = 200;
 const startPositionY = 50;

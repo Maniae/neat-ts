@@ -192,7 +192,6 @@ export class SalesmanView extends React.Component<{}, SalesmanViewState> {
 
 const styles: CssStyleSheet = {
 	container: {
-		flex: 1,
 		maxWidth: "600px"
 	},
 	password: {

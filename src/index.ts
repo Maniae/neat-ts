@@ -3,7 +3,7 @@ import { salesman } from "./demos/genetic/salesman";
 import { race } from "./demos/neat/racing/race";
 import { xor } from "./demos/neat/xor";
 
-race();
+// race();
 
 // xor();
 // findPassword("passwordhardcoretropduratrouver");

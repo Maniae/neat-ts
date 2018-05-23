@@ -1,4 +1,4 @@
-import { Network } from "../../../neural-network/model/network";
+import { Network } from "../../../../neural-network/model/network";
 import { Map } from "./map";
 import { Position } from "./position";
 import { Vector2 } from "./vector2";

@@ -98,6 +98,7 @@ export class FindPasswordView extends React.Component<{}, FindPasswordViewState>
 	run = () => {
 		this.setState(state => {
 			const newPopulation = state.population.createNextGeneration();
+			newPopulation.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
 			const password = newPopulation.candidates[0].genes;
 			const fitness = newPopulation.candidates[0].fitness(password);
 			return {

@@ -49,13 +49,13 @@ export function salesman(towns: Position[]) {
 	};
 
 	let pop = Population.generatePopulation(
-		200,
+		50,
 		createRandomGenotype,
 		{
 			fitness,
 			mutate,
 			cross,
-			mutationProbability: 1
+			mutationProbability: 0.4
 		}
 	);
 

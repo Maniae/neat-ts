@@ -56,10 +56,12 @@ export class RaceService {
 		});
 	}
 
-	onRaceEnded = () => {
+	onRaceEnded = (): number => {
 		/**
 		 * Called on every race timeout
 		 */
+		const bestFitness = this.getBestFitness();
+
 		this.carsPop = this.carsPop.createNextGeneration();
 		this.cars = this.carsPop.candidates.map(
 			it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
@@ -67,6 +69,8 @@ export class RaceService {
 		this.carsPop.candidates.map((it, i) => {
 			it.fitness = this.fitness(i);
 		});
+
+		return bestFitness;
 	}
 
 	mutate = (genes: number[]) => {
@@ -77,6 +81,11 @@ export class RaceService {
 	}
 
 	fitness = (index: number) => () => {
-		return this.cars[index].checkPoints * 1000;
+		return this.cars[index].checkPoints;
+	}
+
+	getBestFitness = () => {
+		this.carsPop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
+		return this.carsPop.candidates[0].fitness(this.carsPop.candidates[0].genes);
 	}
 }

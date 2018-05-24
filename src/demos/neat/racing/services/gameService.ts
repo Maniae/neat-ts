@@ -8,7 +8,7 @@ const dt = 20;
 interface GameState {
 	generation: number;
 	raceTime: number;
-	population: Population<number>;
+	fitness: number;
 }
 export class GameService {
 
@@ -18,6 +18,7 @@ export class GameService {
 	carsBrainsPop: Population<number> = new Population([]);
 	raceDuration: number = dt * 600;
 	map: Map = new Map([], []);
+	bestFitness = 0;
 	onUpdate?: (state: GameState) => void;
 
 	constructor(private drawService: DrawService, private raceService: RaceService) {}
@@ -35,7 +36,7 @@ export class GameService {
 
 	update = () => {
 		if (this.raceTime > this.raceDuration) {
-			this.raceService.onRaceEnded();
+			this.bestFitness = this.raceService.onRaceEnded();
 			this.generation ++;
 			this.raceTime = 0;
 		}
@@ -44,7 +45,11 @@ export class GameService {
 		this.drawService.update(this.map, this.raceService.cars);
 		this.raceTime = this.raceTime + dt;
 		if (this.onUpdate) {
-			this.onUpdate({ generation: this.generation, raceTime: this.raceTime, population: this.carsBrainsPop });
+			this.onUpdate({
+				generation: this.generation,
+				raceTime: this.raceTime,
+				fitness: this.bestFitness
+			});
 		}
 		requestAnimationFrame(this.update);
 	}

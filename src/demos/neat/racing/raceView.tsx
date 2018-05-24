@@ -33,7 +33,7 @@ export class RaceView extends React.Component<{}, RaceViewState> {
 			<div style={styles.content}>
 				<canvas width={1012} height={750} />
 				<div style={styles.statistics}>
-					<Statistic style={{marginLeft: 30}} title="Generation" value={this.state.generation}/>
+					<Statistic title="Generation" value={this.state.generation}/>
 					<Statistic title="Fitness" value={Math.floor(this.state.fitness * 100) / 100}/>
 					<Statistic title="Time" value={this.state.raceTime}/>
 				</div>
@@ -42,11 +42,10 @@ export class RaceView extends React.Component<{}, RaceViewState> {
 	}
 
 	startAlgorithm = () => {
-		// gameService.start();
 		gameService.start(((gameState) => {
 			this.setState({
 				generation: gameState.generation,
-				fitness: 0,
+				fitness: gameState.fitness,
 				raceTime: gameState.raceTime
 			});
 		}));
@@ -77,6 +76,7 @@ const styles: CssStyleSheet = {
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center",
-		justifyContent: "space-around"
+		justifyContent: "space-around",
+		padding: "0 10px"
 	}
 };

@@ -61,7 +61,6 @@ export class Population<T> {
 		/**
 		 * Add the children to the population
 		 */
-		// const newGeneration = this.candidates.concat(newCandidates);
 
 		/**
 		 * Keep the stronger candidates
@@ -72,18 +71,6 @@ export class Population<T> {
 			.slice(0, this.candidates.length - newCandidates.length);
 
 		const newPopulation = newCandidates.concat(bestElders);
-
-		// const cleanedNewGeneration = newGeneration
-		// 	.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))
-		// 	.slice(0, this.candidates.length - +this.ellitism);
-
-		// if (this.ellitism) {
-		// 	// Keep the best oldest candidate
-		// 	console.log(this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[0].fitness([]));
-		// 	cleanedNewGeneration.push(
-		// 		this.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes))[0]
-		// 	);
-		// }
 
 		return new Population(newPopulation, this.getOptions());
 	}

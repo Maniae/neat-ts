@@ -60,4 +60,18 @@ export class Network {
 		}
 		return this.layers.reduce((prevOutput: number[], layer) => layer.activate(prevOutput), inputs);
 	}
+
+	static toJson(network: Network) {
+		return {
+			weights: network.weights,
+			layersSizes: network.layers.map(it => it.neurons.length)
+		};
+	}
+
+	static fromJson(json: any) {
+		return Network.fromWeights(
+			json.weights,
+			json.layersSizes
+		);
+	}
 }

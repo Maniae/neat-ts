@@ -1,4 +1,5 @@
 import { Population } from "../../../../genetic/model";
+import { Network } from "../../../../neural-network/model/network";
 import { Car } from "../domain/car";
 import { Map } from "../domain/map";
 import { DrawService } from "./drawService";
@@ -9,6 +10,7 @@ interface GameState {
 	generation: number;
 	raceTime: number;
 	fitness: number;
+	bestBrain?: Network;
 }
 export class GameService {
 
@@ -19,6 +21,7 @@ export class GameService {
 	raceDuration: number = dt * 600;
 	map: Map = new Map([], []);
 	bestFitness = 0;
+	bestBrain?: Network;
 	onUpdate?: (state: GameState) => void;
 
 	constructor(private drawService: DrawService, private raceService: RaceService) {}
@@ -37,6 +40,7 @@ export class GameService {
 	update = () => {
 		if (this.raceTime > this.raceDuration) {
 			this.bestFitness = this.raceService.onRaceEnded();
+			this.bestBrain = this.raceService.getBestBrain();
 			this.generation ++;
 			this.raceTime = 0;
 		}
@@ -48,7 +52,8 @@ export class GameService {
 			this.onUpdate({
 				generation: this.generation,
 				raceTime: this.raceTime,
-				fitness: this.bestFitness
+				fitness: this.bestFitness,
+				bestBrain: this.bestBrain
 			});
 		}
 		requestAnimationFrame(this.update);

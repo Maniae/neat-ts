@@ -88,4 +88,9 @@ export class RaceService {
 		this.carsPop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
 		return this.carsPop.candidates[0].fitness(this.carsPop.candidates[0].genes);
 	}
+
+	getBestBrain = () => {
+		this.carsPop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
+		return Network.fromWeights(this.carsPop.candidates[0].genes, layersSizes);
+	}
 }

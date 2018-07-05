@@ -18,7 +18,8 @@ export class GameService {
 	raceTime = 0;
 	cars: Car[] = [];
 	carsBrainsPop: Population<number> = new Population([]);
-	raceDuration: number = dt * 600;
+	raceDuration: number = 10000;
+	finalRace = false;
 	map: Map = new Map([], []);
 	bestFitness = 0;
 	bestBrain?: Network;
@@ -26,10 +27,14 @@ export class GameService {
 
 	constructor(private drawService: DrawService, private raceService: RaceService) {}
 
-	init = async () => {
+	init = async (brains?: { name: string, brain: Network}[]) => {
 		await this.drawService.init();
-		await this.raceService.init();
+		await this.raceService.init(brains);
 		this.map = this.drawService.loadMap();
+		if (brains) {
+			this.finalRace = true;
+			this.raceDuration = Infinity;
+		}
 	}
 
 	start = (onUpdate?: (state: GameState) => void) => {
@@ -39,8 +44,9 @@ export class GameService {
 
 	update = () => {
 		if (this.raceTime > this.raceDuration) {
-			this.bestFitness = this.raceService.onRaceEnded();
-			this.bestBrain = this.raceService.getBestBrain();
+			const { bestFitness, bestBrain } = this.raceService.onRaceEnded();
+			this.bestFitness = bestFitness;
+			this.bestBrain = bestBrain;
 			this.generation ++;
 			this.raceTime = 0;
 		}

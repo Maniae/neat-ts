@@ -23,7 +23,7 @@ export class Network {
 	}
 
 	static fromWeights(weights: number[], layersSizes: number[], activationFunction?: (x: number) => number) {
-		let weightIndex = 0;
+		let weightIndex = layersSizes[0];
 		const layers = [];
 		layers.push(new Layer({
 			isInputLayer: true,
@@ -36,7 +36,7 @@ export class Network {
 					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1),
 					activationFunction
 				}));
-				weightIndex += layersSizes[i - 1];
+				weightIndex += (layersSizes[i - 1] + 1);
 			}
 			layers.push(new Layer({ neurons }));
 		}

@@ -39,6 +39,11 @@ export class DrawService {
 		this.ctx.save();
 		this.ctx.translate(car.pos.x, car.pos.y);
 		this.ctx.translate(car.width / 2, car.height / 2);
+		if (car.name) {
+			this.ctx.font = "20px Arial";
+			this.ctx.fillStyle = "#B8336A";
+			this.ctx.fillText(car.name, -20, -20);
+		}
 		this.ctx.rotate(car.direction);
 		this.ctx.drawImage(carImage, -car.width / 2, -car.height / 2, car.width, car.height);
 		if (!car.frozen) {

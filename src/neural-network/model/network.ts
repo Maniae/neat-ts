@@ -23,7 +23,7 @@ export class Network {
 	}
 
 	static fromWeights(weights: number[], layersSizes: number[], activationFunction?: (x: number) => number) {
-		let weightIndex = 0;
+		let weightIndex = layersSizes[0];
 		const layers = [];
 		layers.push(new Layer({
 			isInputLayer: true,
@@ -36,7 +36,7 @@ export class Network {
 					weights: weights.slice(weightIndex, weightIndex + layersSizes[i - 1] + 1),
 					activationFunction
 				}));
-				weightIndex += layersSizes[i - 1];
+				weightIndex += (layersSizes[i - 1] + 1);
 			}
 			layers.push(new Layer({ neurons }));
 		}
@@ -59,5 +59,19 @@ export class Network {
 			throw Error(`Network inputs length should match first layer size, expected ${this.layers[0].size} but got ${inputs.length}`);
 		}
 		return this.layers.reduce((prevOutput: number[], layer) => layer.activate(prevOutput), inputs);
+	}
+
+	static toJson(network: Network) {
+		return {
+			weights: network.weights,
+			layersSizes: network.layers.map(it => it.neurons.length)
+		};
+	}
+
+	static fromJson(json: any) {
+		return Network.fromWeights(
+			json.weights,
+			json.layersSizes
+		);
 	}
 }

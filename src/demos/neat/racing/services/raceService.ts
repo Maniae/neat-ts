@@ -11,25 +11,31 @@ export class RaceService {
 
 	cars: Car[] = [];
 	carsPop: Population<number> = new Population([]);
+	finalRace = false;
 
-	init = () => {
+	init = (brains?: { name: string, brain: Network}[]) => {
 		/**
 		 * Called once at launch
 		 */
-		this.carsPop = Population.generatePopulation(
-			100,
-			() => Network.perceptron(layersSizes).weights,
-			{
-				mutate: this.mutate,
-				mutationProbability: 0.4
-			}
-		);
-		this.cars = this.carsPop.candidates.map(
-			it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
-		);
-		this.carsPop.candidates.map((it, i) => {
-			it.fitness = this.fitness(i);
-		});
+		if (brains) {
+			this.finalRace = true;
+			this.cars = brains.map(it => new Car(startPositionX, startPositionY, it.brain, it.name));
+		} else {
+			this.carsPop = Population.generatePopulation(
+				100,
+				() => Network.perceptron(layersSizes).weights,
+				{
+					mutate: this.mutate,
+					mutationProbability: 0.4
+				}
+			);
+			this.cars = this.carsPop.candidates.map(
+				it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
+			);
+			this.carsPop.candidates.map((it, i) => {
+				it.fitness = this.fitness(i);
+			});
+		}
 	}
 
 	update = () => {
@@ -56,21 +62,24 @@ export class RaceService {
 		});
 	}
 
-	onRaceEnded = (): number => {
+	onRaceEnded = () => {
 		/**
 		 * Called on every race timeout
 		 */
 		const bestFitness = this.getBestFitness();
+		const bestBrain = this.getBestBrain();
 
-		this.carsPop = this.carsPop.createNextGeneration();
-		this.cars = this.carsPop.candidates.map(
-			it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
-		);
-		this.carsPop.candidates.map((it, i) => {
-			it.fitness = this.fitness(i);
-		});
+		if (!this.finalRace) {
+			this.carsPop = this.carsPop.createNextGeneration();
+			this.cars = this.carsPop.candidates.map(
+				it => new Car(startPositionX, startPositionY, Network.fromWeights(it.genes, layersSizes))
+			);
+			this.carsPop.candidates.map((it, i) => {
+				it.fitness = this.fitness(i);
+			});
+		}
 
-		return bestFitness;
+		return { bestFitness, bestBrain };
 	}
 
 	mutate = (genes: number[]) => {
@@ -87,5 +96,10 @@ export class RaceService {
 	getBestFitness = () => {
 		this.carsPop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
 		return this.carsPop.candidates[0].fitness(this.carsPop.candidates[0].genes);
+	}
+
+	getBestBrain = () => {
+		this.carsPop.candidates.sort((a, b) => b.fitness(b.genes) - a.fitness(a.genes));
+		return Network.fromWeights(this.carsPop.candidates[0].genes, layersSizes);
 	}
 }

@@ -10,6 +10,7 @@ export class Car {
 	readonly width = 36;
 	readonly height = 18;
 	readonly maxSpeed = 1000;
+	readonly name?: string;
 	speed: number = 0;
 	direction: number = Math.PI / 4;
 	brain?: Network;
@@ -20,9 +21,10 @@ export class Car {
 	lastCheckPoint: number | null = null;
 	distanceToLastCheckPoint: number = 0;
 
-	constructor(x: number, y: number, brain?: Network) {
+	constructor(x: number, y: number, brain?: Network, name?: string) {
 		this.pos = new Position(x, y);
 		this.brain = brain;
+		this.name = name;
 	}
 
 	accelerate = () => {

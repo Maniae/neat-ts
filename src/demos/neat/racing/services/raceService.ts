@@ -3,15 +3,74 @@ import { Network } from "../../../../neural-network/model/network";
 import { Car } from "../domain/car";
 import { Position } from "../domain/position";
 
+/**
+ * Touch with the eyes
+ */
 const startPositionX = 200;
 const startPositionY = 50;
-const layersSizes = [4, 4, 4, 2];
+
+/**
+ * Edit your configs here:
+ */
+
+// const populationSize = 0;
+// const mutationProbability = 0;
+/**
+ * The sizes of neural network layers, the first element is the number of inputs, last element is the number of outputs
+ */
+// const layersSizes = [0]
 
 export class RaceService {
 
 	cars: Car[] = [];
 	carsPop: Population<number> = new Population([]);
 	finalRace = false;
+
+	update = () => {
+		/**
+		 * Called on every frame
+		 */
+		this.cars.map(car => {
+			if (!car.brain) {
+				throw Error("This car has no brain");
+			}
+			/**
+			 * Customize inputs and use output to have the car take decisions
+			 */
+
+			// const inputs: number[] = [];
+			// const brainOutput = car.brain.activate(inputs);
+
+		});
+	}
+
+	mutate = (genes: number[]) => {
+		/**
+		 * Randomly make genes mutate (the function should not mutate the genes array)
+		 * (Yes that's an issue with the genetic algorithm vocabulary)
+		 */
+
+		// const genesCopy = genes.slice(0);
+		// return genesCopy;
+	}
+
+	fitness = (index: number) => () => {
+		/**
+		 * The fitness function that should be maxed
+		 */
+
+		// return 0;
+	}
+
+	/**
+	 *
+	 *
+	 *
+	 * Utility functions, nothing to do here
+	 *
+	 *
+	 *
+	 */
 
 	init = (brains?: { name: string, brain: Network}[]) => {
 		/**
@@ -22,11 +81,11 @@ export class RaceService {
 			this.cars = brains.map(it => new Car(startPositionX, startPositionY, it.brain, it.name));
 		} else {
 			this.carsPop = Population.generatePopulation(
-				100,
+				populationSize,
 				() => Network.perceptron(layersSizes).weights,
 				{
 					mutate: this.mutate,
-					mutationProbability: 0.4
+					mutationProbability
 				}
 			);
 			this.cars = this.carsPop.candidates.map(
@@ -36,30 +95,6 @@ export class RaceService {
 				it.fitness = this.fitness(i);
 			});
 		}
-	}
-
-	update = () => {
-		/**
-		 * Called on every frame
-		 */
-		this.cars.map(car => {
-			if (!car.brain) {
-				throw Error("This car has no brain");
-			}
-			const brainOutput = car.brain.activate([...car.activatedSensors, car.speed / car.maxSpeed]);
-			const directionDecision = brainOutput[0];
-			const speedDecision = brainOutput[1];
-			if (directionDecision > 0) {
-				car.turn("right");
-			} else {
-				car.turn("left");
-			}
-			if (speedDecision > 0) {
-				car.accelerate();
-			} else {
-				car.brake();
-			}
-		});
 	}
 
 	onRaceEnded = () => {
@@ -80,17 +115,6 @@ export class RaceService {
 		}
 
 		return { bestFitness, bestBrain };
-	}
-
-	mutate = (genes: number[]) => {
-		const genesCopy = genes.slice(0);
-		const randomIndex = Math.floor(Math.random() * genes.length);
-		genesCopy[randomIndex] = Math.random() * 2 - 1;
-		return genesCopy;
-	}
-
-	fitness = (index: number) => () => {
-		return this.cars[index].checkPoints;
 	}
 
 	getBestFitness = () => {

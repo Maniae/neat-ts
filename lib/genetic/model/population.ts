@@ -24,8 +24,6 @@ export class Population<T> {
 		this.mutate = options.mutate || (g => g);
 		this.cross = options.cross || Crossover.SINGLE_POINT();
 		this.mutationProbability = options.mutationProbability || 0.2;
-
-		this.candidates.sort((a, b) => this.fitness(b) - this.fitness(a));
 	}
 
 	get bestCandidate(): Candidate<T> {
@@ -60,6 +58,7 @@ export class Population<T> {
 			.slice(0, this.candidates.length - newCandidates.length);
 
 		const newPopulation = newCandidates.concat(bestElders);
+		newPopulation.sort((a, b) => this.fitness(b) - this.fitness(a));
 
 		return new Population(newPopulation, this.getOptions());
 	}
